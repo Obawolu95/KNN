@@ -71,6 +71,8 @@ def generate_data_with_cluster(original_size=100, synthetic_size=100, cluster_ra
     
     original_center = np.array([0, 0])  # Center for original data
     original_data = original_center + np.random.normal(loc=0, scale=data_radius, size=(original_size, 2))
+    #print("original data is :")
+    #print(original_data)
     
     synthetic_center = np.array([0, 0])  # Center for synthetic data
     synthetic_data = synthetic_center + np.random.normal(loc=0, scale=data_radius, size=(synthetic_size, 2))
@@ -88,8 +90,9 @@ def generate_data_with_cluster(original_size=100, synthetic_size=100, cluster_ra
     synthetic_data[clustered_indices] = cluster_center + np.random.normal(loc=0, scale=cluster_radius, size=(num_clustered, 2))
     
     combined_data = np.vstack((original_data, synthetic_data))
+    #print(combined_data)
     labels = np.concatenate((np.ones(original_size), np.full(synthetic_size, 2)))
-    
+    #print(labels)
     return combined_data, labels
 
 # Calculate k-nearest neighbors
@@ -98,6 +101,8 @@ def calculate_knn(combined_data, k=10):
     knn.fit(combined_data)
     
     knn_distances, knn_indices = knn.kneighbors(combined_data)
+    #print(knn_distances.shape)
+    #print(knn_indices.shape)
     return knn_indices, knn_distances
 
 # Count original vs. synthetic neighbors
@@ -133,27 +138,28 @@ knn_indices, knn_distances = calculate_knn(combined_data, k)
 
 # Count the original vs synthetic neighbors for each point
 counts = count_original_vs_synthetic_neighbors(knn_indices, labels)
-
+#print(counts)
 # Get the number of original neighbors for each point
 original_neighbors_list = [count[0] for count in counts]
+#print(original_neighbors_list)
 
 # Calculate the hypergeometric distribution for each point
 N_x = original_size  # Number of original points
 N_y = synthetic_size  # Number of synthetic points
 
 # Calculate the probabilities for the original neighbors using hypergeometric distribution
-prob_original = np.array([hypergeometric_distribution(N_x, N_y, k, original_neighbors)[0] for original_neighbors in original_neighbors_list])
+prob_original = np.array([hypergeometric_distribution(N_x,N_y, k, original_neighbors)[0] for original_neighbors in original_neighbors_list])
 
 # Debugging: Print some probabilities to check if they look correct
-print("Probabilities for the original neighbors (first 10 values):")
-print(prob_original[:10])
+print("Probabilities for the original neighbors (first 3 values):")
+print(prob_original[:3])
 
 # Compute the CDF
 cdf = compute_cdf(prob_original)
 
 # Debugging: Check CDF values before plotting
 print("CDF values (first 10 values):")
-print(cdf[:10])
+print(cdf[:3])
 
 # Plot the results
 plt.figure(figsize=(10, 6))
